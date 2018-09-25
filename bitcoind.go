@@ -97,8 +97,8 @@ func (b *Bitcoind) GetBalance(account string, minconf uint64) (balance float64, 
 	return
 }
 
-// GetBestBlockhash returns the hash of the best (tip) block in the longest block chain.
-func (b *Bitcoind) GetBestBlockhash() (bestBlockHash string, err error) {
+// GetBestBlockHash returns the hash of the best (tip) block in the longest block chain.
+func (b *Bitcoind) GetBestBlockHash() (bestBlockHash string, err error) {
 	r, err := b.client.call("getbestblockhash", nil)
 	if err = handleError(err, &r); err != nil {
 		return
@@ -188,6 +188,36 @@ func (b *Bitcoind) GetGenerate() (generate bool, err error) {
 		return
 	}
 	err = json.Unmarshal(r.Result, &generate)
+	return
+}
+
+// Generate generates new blocks
+func (b *Bitcoind) Generate(blocks int) (hashes []string, err error) {
+	p := []int{blocks}
+	r, err := b.client.call("generate", p)
+	if err = handleError(err, &r); err != nil {
+		return
+	}
+	err = json.Unmarshal(r.Result, &hashes)
+	return
+}
+
+// InvalidateBlock invalidates block by hash
+func (b *Bitcoind) InvalidateBlock(block string) (err error) {
+	r, err := b.client.call("invalidateblock", []string{block})
+	if err = handleError(err, &r); err != nil {
+		return
+	}
+	return
+}
+
+// SendRawTransaction
+func (b *Bitcoind) SendRawTransaction(signedHex string) (txhash string, err error) {
+	r, err := b.client.call("sendrawtransaction", []string{signedHex})
+	if err = handleError(err, &r); err != nil {
+		return
+	}
+	err = json.Unmarshal(r.Result, &txhash)
 	return
 }
 
